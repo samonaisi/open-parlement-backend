@@ -1,0 +1,88 @@
+services:
+  open-parlement:
+    container_name: open-parlement
+    build:
+      context: .
+      args:
+        EXPORT_FLAG: --dev
+    env_file:
+      - .env
+    user: root
+    restart: unless-stopped
+    command: uvicorn open_parlement.asgi:application --host 0.0.0.0 --port 8000 --reload
+    ports:
+      - 8000:8000
+    depends_on:
+      - postgres
+    environment:
+      DJANGO_SETTINGS_MODULE: open_parlement.settings
+    volumes:
+      - .:/app
+
+  celery:
+    build: .
+    env_file:
+      - .env
+    command: celery -A open-parlement worker -B -l info
+    restart: unless-stopped
+    depends_on:
+      - open-parlement
+      - redis
+    environment:
+      DJANGO_SETTINGS_MODULE: open_parlement.settings
+
+  postgres:
+    image: pgvector/pgvector:pg17
+    user: postgres
+    ports:
+      - 5432:5432
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_EXTENSIONS=unaccent
+    healthcheck:
+      test: ["CMD", "pg_isready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  minio:
+    image: quay.io/minio/minio
+    ports:
+      - 9000:9000
+      - 9001:9001
+    entrypoint:
+      - /usr/bin/bash
+      - -c
+    command:
+      # Create the bucket open-parlement before starting minio
+      - mkdir -p /data/open-parlement && minio server --console-address :9001 /data
+    volumes:
+      - s3:/data
+
+  redis:
+    image: redis:6.2-bullseye
+    command:
+      # Enable persistence
+      - redis-server
+      - --save
+      - "60"
+      - "1"
+      - --loglevel
+      - warning
+    ports:
+      - 6379:6379
+    volumes:
+      - redis:/data
+
+  mailhog:
+    image: mailhog/mailhog
+    ports:
+      - 1025:1025
+      - 8025:8025
+
+volumes:
+  postgres-data:
+  s3:
+  redis:

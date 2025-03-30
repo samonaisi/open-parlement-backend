@@ -1,0 +1,47 @@
+# Created by https://www.toptal.com/developers/gitignore/api/visualstudiocode
+# Edit at https://www.toptal.com/developers/gitignore?templates=visualstudiocode
+
+# VisualStudioCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# Pycharm config
+.idea/
+
+# Local History for Visual Studio Code
+.history/
+.history
+
+# Environments
+.env
+.env.dev
+.env.stag
+.env.fullstack
+.env.bak
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Mac DS_Store files
+.DS_Store
+**/.DS_Store
+
+# Translations
+*.mo
+
+# static files
+static/
+
+# Python cache
+**/__pycache__/**
+
+# Test files
+_tests_report_*.txt
+.coverage

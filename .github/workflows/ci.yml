@@ -1,0 +1,81 @@
+name: Test CI
+
+on: 
+  push:
+    branches:
+      - "**"
+
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-push-job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_REGISTRY_USERNAME }}
+          password: ${{ secrets.DOCKER_REGISTRY_PASSWORD }}
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        env:
+          DJANGO_SETTINGS_MODULE: open_parlement.settings
+        with:
+          push: true
+          tags: ${{ vars.DOCKER_REGISTRY }}/open-parlement:backend_${{ github.ref_name }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          context: .
+          file: Dockerfile
+  format-and-test-job:
+    needs: build-and-push-job
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: /app
+    container:
+      image: ${{ vars.DOCKER_REGISTRY }}/open-parlement:backend_${{ github.ref_name }}
+      credentials:
+        username: ${{ secrets.DOCKER_REGISTRY_USERNAME }}
+        password: ${{ secrets.DOCKER_REGISTRY_PASSWORD }}
+      env:
+        DJANGO_SETTINGS_MODULE: open-parlement.settings
+      options: --user root
+    services:
+      postgres:
+        image: pgvector/pgvector:pg17
+        env:
+          POSTGRES_PASSWORD: password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:6.2-bullseye
+        ports:
+          - 6379:6379
+      mailhog:
+        image: mailhog/mailhog
+        ports:
+          - 1025:1025
+          - 8025:8025
+    steps:
+      - name: Check the code formatting
+        run: make format-check
+      - name: Run the linter
+        run: make lint
+      - name: Check that migrations are up-to-date
+        run: make migrations-check
+      - name: Check that translations are up-to-date
+        run: make locales-check
+      - name: Run unit tests
+        run: make test

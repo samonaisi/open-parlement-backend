@@ -1,0 +1,89 @@
+[tool.poetry]
+name = "open-parlement"
+version = "0.1.0"
+description = ""
+authors = ["Sam Onaisi"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.13"
+django = "^5.1.3"
+uvicorn = "^0.32.0"
+ipython = "^8.29.0"
+djangorestframework = "^3.15.2"
+drf-spectacular = "^0.27.2"
+psycopg2 = "^2.9.10"
+pillow = "^11.0.0"
+djangorestframework-simplejwt = "^5.3.1"
+django-filter = "^24.3"
+django-cleanup = "^9.0.0"
+django-cors-headers = "^4.6.0"
+django-extensions = "^3.2.3"
+django-redis = "^5.4.0"
+redis = "^5.2.0"
+whitenoise = {version = "^6.8.2", extras = ["brotli"]}
+celery = "^5.4.0"
+boto3 = "^1.35.58"
+tblib = "^3.0.0"
+
+
+[tool.poetry.group.dev.dependencies]
+black = "^24.10.0"
+bandit = "^1.7.10"
+coverage = "^7.6.4"
+dj-inmemorystorage = "^2.1.0"
+flake8 = "^7.1.1"
+factory-boy = "^3.3.1"
+pytest = "^8.3.3"
+pytest-django = "^4.9.0"
+django-slowtests = "^1.1.1"
+django-debug-toolbar = "^4.4.6"
+isort = "^5.13.2"
+flake8-bugbear = "^24.10.31"
+flake8-builtins = "^2.5.0"
+flake8-eradicate = "^1.5.0"
+flake8-pie = "^0.16.0"
+flake8-return = "^1.2.0"
+flake8-simplify = "^0.21.0"
+pep8-naming = "^0.14.1"
+parameterized = "^0.9.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.isort]
+profile = "black"
+skip_glob = ["**/migrations/*.py"]
+
+[tool.black]
+exclude = '''
+(
+  /(
+    ...
+    | \.venv
+    | .+/migrations
+  )/
+)
+'''
+
+[tool.coverage.run]
+branch = true
+command_line = "manage.py test --no-input --parallel"
+source = ["apps"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+omit = [
+  "./venv/*",
+  "*tests*",
+  "*apps.py",
+  "*manage.py",
+  "*__init__.py",
+  "*migrations*",
+  "*asgi*",
+  "*wsgi*",
+  "*admin.py",
+  "*urls.py",
+]
