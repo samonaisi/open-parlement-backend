@@ -4,7 +4,7 @@ services:
     build:
       context: .
       args:
-        EXPORT_FLAG: --dev
+        EXPORT_FLAG: "--with dev"
     env_file:
       - .env
     user: root
@@ -23,7 +23,7 @@ services:
     build: .
     env_file:
       - .env
-    command: celery -A open-parlement worker -B -l info
+    command: celery -A open_parlement worker -B -l info
     restart: unless-stopped
     depends_on:
       - open-parlement
